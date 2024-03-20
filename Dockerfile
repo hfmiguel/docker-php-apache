@@ -10,7 +10,7 @@ ARG PHP_VERSION=8.2
 ENV DEBIAN_FRONTEND noninteractive
 
 # Changing DocumentRoot
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+ENV APACHE_DOCUMENT_ROOT /var/www/public
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
