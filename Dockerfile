@@ -248,3 +248,4 @@ ARG LOCALE=POSIX
 ENV LC_ALL ${LOCALE}
 
 WORKDIR /var/www
+USER www-data
