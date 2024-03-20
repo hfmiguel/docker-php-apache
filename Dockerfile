@@ -246,3 +246,5 @@ RUN if [ ${INSTALL_FAKETIME} = true ]; then \
 # Configure locale.
 ARG LOCALE=POSIX
 ENV LC_ALL ${LOCALE}
+
+WORKDIR /var/www
