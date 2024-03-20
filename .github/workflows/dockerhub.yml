@@ -23,4 +23,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: seu_usuario_dockerhub/nome_da_imagem:versao
+          tags: devfelix/php-8.2-apache:latest
