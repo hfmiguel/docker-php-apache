@@ -9,10 +9,34 @@ env:
   ACTOR: ${{ github.actor }}
   GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
   IMAGE_NAME: ${{ github.repository }}
+  DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+  DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+  DOCKER_HUB_IMAGE_NAME: ${{ secrets.DOCKER_HUB_IMAGE_NAME }}
 
 jobs:
+
+  create_release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+
+    - uses: eregon/publish-release@v1
+      env:
+        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+      with:
+        release_id: ${{ steps.create_release.outputs.id }}
+
   build-and-push-docker-hub:
     name: Push Docker image to Docker Hub
+    needs: create_release
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -38,37 +62,9 @@ jobs:
           tags: ${{ secrets.DOCKER_HUB_IMAGE_NAME }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
-  create_release:
-    name: Create Release
-    runs-on: ubuntu-latest
-    steps:
-    - name: Create Draft Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
-      with:
-        tag_name: <tofill>
-        release_name: <tofill>
-        draft: true
-        prerelease: false
-
-    - uses: actions/upload-release-asset@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./my-artifact.zip
-        asset_name: my-artifact.zip
-        asset_content_type: application/zip
-
-    - uses: eregon/publish-release@v1
-      env:
-        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
-      with:
-        release_id: ${{ steps.create_release.outputs.id }}
-
   build-and-push-github-container-registry:
+    name: Push Docker image to GitHub Container Registry
+    needs: create_release
     runs-on: ubuntu-latest
     permissions:
       contents: read
