@@ -8,15 +8,34 @@ env:
   REGISTRY: ghcr.io
   ACTOR: ${{ github.actor }}
   GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: ${{ github.repository }}:latest
   DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
   DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
   DOCKER_HUB_IMAGE_NAME: ${{ secrets.DOCKER_HUB_IMAGE_NAME }}
+  DOCKER_HUB_N      AMESPACE: ${{ secrets.DOCKER_HUB_NAMESPACE }}
+  GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
 
 jobs:
 
+  guardian:
+    name: GitGuardian scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # fetch all history so multiple commits can be scanned
+      - name: GitGuardian scan
+        uses: GitGuardian/ggshield-action@v1.25.0
+        env:
+          GITHUB_PUSH_BEFORE_SHA: ${{ github.event.before }}
+          GITHUB_PUSH_BASE_SHA: ${{ github.event.base }}
+          GITHUB_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          GITGUARDIAN_API_KEY: ${{ env.GITGUARDIAN_API_KEY }}
+
   create_release:
     name: Create Release
+    needs: guardian
     runs-on: ubuntu-latest
     steps:
     - name: Checkout branch
@@ -26,7 +45,7 @@ jobs:
       id: generate_release_tag
       uses: amitsingh-007/next-release-tag@v5.0.0
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        github_token: ${{ env.GITHUB_TOKEN }}
         tag_prefix: 'v'
         tag_template: 'yyyy.mm.dd.i'
 
@@ -58,14 +77,14 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+          username: ${{ env.DOCKER_HUB_USERNAME }}
+          password: ${{ env.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          images: ${{ secrets.DOCKER_HUB_IMAGE_NAME }}:latest
+          images: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.DOCKER_HUB_IMAGE_NAME }}:latest
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -73,7 +92,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_HUB_IMAGE_NAME }}:latest
+          tags: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.DOCKER_HUB_IMAGE_NAME }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   build-and-push-github-container-registry:
