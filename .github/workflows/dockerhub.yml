@@ -1,4 +1,4 @@
-name: Publish Docker image
+name: Docker PHP CI/CD
 
 on:
   push:
@@ -8,7 +8,7 @@ env:
   REGISTRY: ghcr.io
   ACTOR: ${{ github.actor }}
   GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-  IMAGE_NAME: ${{ github.repository }}:latest
+  IMAGE_NAME: ${{ github.repository }}
   DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
   DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
   DOCKER_HUB_IMAGE_NAME: ${{ secrets.DOCKER_HUB_IMAGE_NAME }}
@@ -64,6 +64,7 @@ jobs:
 
   build-and-push-github-container-registry:
     name: Push Docker image to GitHub Container Registry
+    needs: [guardian, build-and-push-docker-hub]
     runs-on: ubuntu-latest
     permissions:
       contents: read
