@@ -64,7 +64,6 @@ jobs:
 
   build-and-push-github-container-registry:
     name: Push Docker image to GitHub Container Registry
-    needs: build-and-push-docker-hub
     runs-on: ubuntu-latest
     permissions:
       contents: read
