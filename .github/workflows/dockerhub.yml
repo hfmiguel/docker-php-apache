@@ -33,42 +33,9 @@ jobs:
           GITHUB_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           GITGUARDIAN_API_KEY: ${{ env.GITGUARDIAN_API_KEY }}
 
-  create_release:
-    name: Create Release
-    needs: guardian
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout branch
-      uses: actions/checkout@v4
-
-    - name: Generate release tag
-      id: generate_release_tag
-      uses: amitsingh-007/next-release-tag@v5.0.0
-      with:
-        github_token: ${{ env.GITHUB_TOKEN }}
-        tag_prefix: 'v'
-        tag_template: 'yyyy.mm.dd.i'
-
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
-      with:
-        tag_name: v${{ steps.generate_release_tag.outputs.next_release_tag }}
-        release_name: Release ${{ steps.generate_release_tag.outputs.next_release_tag }}
-        draft: false
-        prerelease: false
-
-    - uses: eregon/publish-release@v1
-      env:
-        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
-      with:
-        release_id: ${{ steps.create_release.outputs.id }}
-
   build-and-push-docker-hub:
     name: Push Docker image to Docker Hub
-    needs: create_release
+    needs: guardian
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -127,3 +94,36 @@ jobs:
           file: ./Dockerfile
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+  create_release:
+    name: Create Release
+    needs: ["guardian", "build-and-push-github-container-registry"]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout branch
+      uses: actions/checkout@v4
+
+    - name: Generate release tag
+      id: generate_release_tag
+      uses: amitsingh-007/next-release-tag@v5.0.0
+      with:
+        github_token: ${{ env.GITHUB_TOKEN }}
+        tag_prefix: 'v'
+        tag_template: 'yyyy.mm.dd.i'
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.generate_release_tag.outputs.next_release_tag }}
+        release_name: Release ${{ steps.generate_release_tag.outputs.next_release_tag }}
+        draft: false
+        prerelease: false
+
+    - uses: eregon/publish-release@v1
+      env:
+        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+      with:
+        release_id: ${{ steps.create_release.outputs.id }}
