@@ -19,14 +19,25 @@ jobs:
     name: Create Release
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout branch
+      uses: actions/checkout@v4
+
+    - name: Generate release tag
+      id: generate_release_tag
+      uses: amitsingh-007/next-release-tag@v5.0.0
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        tag_prefix: 'v'
+        tag_template: 'yyyy.mm.dd.i'
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
       with:
-        tag_name: 1.0.0
-        release_name: Release 1.0.0
+        tag_name: ${{ steps.generate_release_tag.outputs.next_release_tag }}
+        release_name: Release ${{ steps.generate_release_tag.outputs.next_release_tag }}
         draft: false
         prerelease: false
 
@@ -67,7 +78,7 @@ jobs:
 
   build-and-push-github-container-registry:
     name: Push Docker image to GitHub Container Registry
-    needs: create_release
+    needs: build-and-push-docker-hub
     runs-on: ubuntu-latest
     permissions:
       contents: read
