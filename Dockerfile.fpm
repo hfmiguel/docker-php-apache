@@ -13,5 +13,8 @@ ENV APACHE_DOCUMENT_ROOT /var/www/public
 ARG LOCALE=POSIX
 ENV LC_ALL ${LOCALE}
 
+## Give full access to the /tmp directory for the www-data user, otherwise some packages will fail to install
+RUN chmod 1777 /tmp
+
 WORKDIR /var/www
 USER www-data
