@@ -11,7 +11,8 @@ env:
   IMAGE_NAME: ${{ github.repository }}
   DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
   DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-  DOCKER_HUB_IMAGE_NAME: ${{ secrets.DOCKER_HUB_IMAGE_NAME }}
+  DOCKER_HUB_IMAGE_FPM_NAME: 8.4.21-fpm
+  DOCKER_HUB_IMAGE_APACHE_NAME: 8.4.21-apache
   DOCKER_HUB_NAMESPACE: ${{ secrets.DOCKER_HUB_NAMESPACE }}
   GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
 
@@ -47,57 +48,39 @@ jobs:
           username: ${{ env.DOCKER_HUB_USERNAME }}
           password: ${{ env.DOCKER_HUB_ACCESS_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker
+      - name: Extract APACHE metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          images: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.DOCKER_HUB_IMAGE_NAME }}:latest
+          images: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.DOCKER_HUB_IMAGE_APACHE_NAME }}:latest
 
-      - name: Build and push Docker image
+      - name: Build and push Docker Apache image
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile
+          file: ./Dockerfile.apache
           push: true
-          tags: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.DOCKER_HUB_IMAGE_NAME }}:latest
+          tags: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.DOCKER_HUB_IMAGE_APACHE_NAME }}:latest,
           labels: ${{ steps.meta.outputs.labels }}
 
-  build-and-push-github-container-registry:
-    name: Push Docker image to GitHub Container Registry
-    needs: [guardian, build-and-push-docker-hub]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Log in to the Container registry
-        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ env.GITHUB_TOKEN }}
-
-      - name: Extract metadata (tags, labels) for Docker
+      - name: Extract FPM metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.DOCKER_HUB_IMAGE_FPM_NAME }}:latest
 
-      - name: Build and push Docker image
+      - name: Build and push Docker FPM image
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: ./Dockerfile.fpm
           push: true
-          file: ./Dockerfile
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.DOCKER_HUB_IMAGE_FPM_NAME }}:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   create_release:
     name: Create Release
-    needs: ["guardian", "build-and-push-github-container-registry"]
+    needs: ["guardian", "build-and-push-docker-hub"]
     runs-on: ubuntu-latest
     steps:
     - name: Checkout branch

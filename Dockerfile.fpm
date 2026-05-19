@@ -1,0 +1,17 @@
+FROM php:8.4.21-fpm
+
+LABEL maintainer="Henrique Felix <hfelixmiguell@gmail.com>"
+ARG PHP_VERSION=8.4.21
+
+# Set Environment Variables
+ENV DEBIAN_FRONTEND noninteractive
+
+# Changing DocumentRoot
+ENV APACHE_DOCUMENT_ROOT /var/www/public
+
+# Configure locale.
+ARG LOCALE=POSIX
+ENV LC_ALL ${LOCALE}
+
+WORKDIR /var/www
+USER www-data
