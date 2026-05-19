@@ -228,8 +228,7 @@ USER root
 
 # Clean up
 RUN apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-    rm /var/log/lastlog /var/log/faillog
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Configure non-root user.
 RUN groupmod -o -g 1000 www-data \
@@ -246,6 +245,10 @@ RUN if [ ${INSTALL_FAKETIME} = true ]; then \
 # Configure locale.
 ARG LOCALE=POSIX
 ENV LC_ALL ${LOCALE}
+
+## Give full access to the /tmp directory for the www-data user, otherwise some packages will fail to install
+RUN chmod 1777 /tmp
+
 
 WORKDIR /var/www
 USER www-data
