@@ -49,7 +49,7 @@ jobs:
           password: ${{ env.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: Extract APACHE metadata (tags, labels) for Docker
-        id: meta
+        id: meta-apache
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
           images: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.DOCKER_HUB_IMAGE_APACHE_NAME }}:latest
@@ -61,10 +61,10 @@ jobs:
           file: ./Dockerfile.apache
           push: true
           tags: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.DOCKER_HUB_IMAGE_APACHE_NAME }}:latest,
-          labels: ${{ steps.meta.outputs.labels }}
+          labels: ${{ steps.meta-apache.outputs.labels }}
 
       - name: Extract FPM metadata (tags, labels) for Docker
-        id: meta
+        id: meta-fpm
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
           images: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.DOCKER_HUB_IMAGE_FPM_NAME }}:latest
@@ -76,7 +76,7 @@ jobs:
           file: ./Dockerfile.fpm
           push: true
           tags: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.DOCKER_HUB_IMAGE_FPM_NAME }}:latest
-          labels: ${{ steps.meta.outputs.labels }}
+          labels: ${{ steps.meta-fpm.outputs.labels }}
 
   create_release:
     name: Create Release
