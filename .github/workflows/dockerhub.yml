@@ -13,6 +13,7 @@ env:
   DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
   DOCKER_HUB_IMAGE_FPM_NAME: php-8.4-fpm
   DOCKER_HUB_IMAGE_APACHE_NAME: php-8.4-apache
+  DOCKER_HUB_IMAGE_COMPOSER_NAME: php-8.4-composer
   DOCKER_HUB_NAMESPACE: ${{ secrets.DOCKER_HUB_NAMESPACE }}
   GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
 
@@ -91,6 +92,35 @@ jobs:
           tags: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.DOCKER_HUB_IMAGE_FPM_NAME }}:latest
           labels: ${{ steps.meta-fpm.outputs.labels }}
 
+  build-and-push-php-composer-docker-hub:
+    name: Push Docker image to Docker Hub
+    needs: guardian
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_HUB_USERNAME }}
+          password: ${{ env.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Extract Composer metadata (tags, labels) for Docker
+        id: meta-composer
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.DOCKER_HUB_IMAGE_COMPOSER_NAME }}:latest
+
+      - name: Build and push Docker Composer image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.phpcomposer
+          push: true
+          tags: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.DOCKER_HUB_IMAGE_COMPOSER_NAME }}:latest
+          labels: ${{ steps.meta-composer.outputs.labels }}
+
   create_release:
     name: Create Release
     needs:
@@ -98,6 +128,7 @@ jobs:
         "guardian",
         "build-and-push-php-apache-docker-hub",
         "build-and-push-php-fpm-docker-hub",
+        "build-and-push-php-composer-docker-hub",
       ]
     runs-on: ubuntu-latest
     steps:

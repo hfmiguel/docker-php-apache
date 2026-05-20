@@ -13,7 +13,10 @@ ENV APACHE_DOCUMENT_ROOT /var/www/public
 ARG LOCALE=POSIX
 ENV LC_ALL ${LOCALE}
 
-## Give full access to the /tmp directory for the www-data user, otherwise some packages will fail to install
-RUN chmod 1777 /tmp
+COPY ./laravel.ini /usr/local/etc/php/conf.d
+COPY ./pool.conf /usr/local/etc/php-fpm.d/
+COPY ./opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+
+RUN chmod -R www-data:www-data /tmp
 
 WORKDIR /var/www
