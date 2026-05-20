@@ -17,4 +17,3 @@ ENV LC_ALL ${LOCALE}
 RUN chmod 1777 /tmp
 
 WORKDIR /var/www
-USER www-data
