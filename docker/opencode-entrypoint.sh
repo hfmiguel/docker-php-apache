@@ -24,21 +24,26 @@ else
     echo "Warning: Openwiki provider not detected"
 fi
 
-if [ -n "$PHP_BASE_IMAGE" ]; then
-    PHP_IMAGE=$(docker ps -a --format '{{.Image}}' --filter "name=auriscare-php" | head -n 1)
+
+PHP_IMAGE=""
+
+if [ -n "$PHP_CONTAINER" ]; then
+    PHP_IMAGE=$(docker ps -a --format '{{.Image}}' --filter "name=${PHP_CONTAINER}" | head -n 1)
 
     if [ -z "$PHP_IMAGE" ]; then
-        PHP_IMAGE=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep "auriscare-php" | head -n 1)
+        PHP_IMAGE=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep "${PHP_CONTAINER}" | head -n 1)
     fi
+fi
 
-    if [ -n "$PHP_IMAGE" ]; then
+
+if [[ -n "$PHP_IMAGE" && -n "$OPENCODE_CONTAINER_NAME" && -n "$PROJECT_NETWORK_FULL_NAME" ]]; then
 cat <<EOF > /usr/local/bin/php
 #!/bin/sh
 exec docker run --rm -i \
---volumes-from auriscare-opencode \
---network auriscare_auriscare-network \
---workdir /var/www/auris-care \
---env-file /var/www/auris-care/.env \
+--volumes-from ${OPENCODE_CONTAINER_NAME} \
+--network ${PROJECT_NETWORK_FULL_NAME} \
+--workdir /var/www/project \
+--env-file /var/www/project/.env \
 "$PHP_IMAGE" php "\$@"
 EOF
 chmod +x /usr/local/bin/php
@@ -46,10 +51,10 @@ chmod +x /usr/local/bin/php
 cat <<EOF > /usr/local/bin/composer
 #!/bin/sh
 exec docker run --rm -i \
---volumes-from auriscare-opencode \
---network auriscare_auriscare-network \
---workdir /var/www/auris-care \
---env-file /var/www/auris-care/.env \
+--volumes-from ${OPENCODE_CONTAINER_NAME} \
+--network ${PROJECT_NETWORK_FULL_NAME} \
+--workdir /var/www/project \
+--env-file /var/www/project/.env \
 "$PHP_IMAGE" composer "\$@"
 EOF
 chmod +x /usr/local/bin/composer
@@ -57,10 +62,10 @@ chmod +x /usr/local/bin/composer
 cat <<EOF > /usr/local/bin/pest
 #!/bin/sh
 exec docker run --rm -i \
---volumes-from auriscare-opencode \
---network auriscare_auriscare-network \
---workdir /var/www/auris-care \
---env-file /var/www/auris-care/.env \
+--volumes-from ${OPENCODE_CONTAINER_NAME} \
+--network ${PROJECT_NETWORK_FULL_NAME} \
+--workdir /var/www/project \
+--env-file /var/www/project/.env \
 "$PHP_IMAGE" vendor/bin/pest "\$@"
 EOF
 chmod +x /usr/local/bin/pest
@@ -68,10 +73,10 @@ chmod +x /usr/local/bin/pest
 cat <<EOF > /usr/local/bin/pint
 #!/bin/sh
 exec docker run --rm -i \
---volumes-from auriscare-opencode \
---network auriscare_auriscare-network \
---workdir /var/www/auris-care \
---env-file /var/www/auris-care/.env \-w /var/www/auris-care \
+--volumes-from ${OPENCODE_CONTAINER_NAME} \
+--network ${PROJECT_NETWORK_FULL_NAME} \
+--workdir /var/www/project \
+--env-file /var/www/project/.env \
 "$PHP_IMAGE" vendor/bin/pint "\$@" 
 EOF
 chmod +x /usr/local/bin/pint
@@ -79,15 +84,13 @@ chmod +x /usr/local/bin/pint
 cat <<EOF > /usr/local/bin/run_phpcomposer_container
 #!/bin/sh
 exec docker run --rm -i \
---volumes-from auriscare-opencode \
---network auriscare_auriscare-network \
---workdir /var/www/auris-care \
---env-file /var/www/auris-care/.env \
+--volumes-from ${OPENCODE_CONTAINER_NAME} \
+--network ${PROJECT_NETWORK_FULL_NAME} \
+--workdir /var/www/project \
+--env-file /var/www/project/.env \
 "$PHP_IMAGE" "\$@" 
 EOF
 chmod +x /usr/local/bin/run_phpcomposer_container
-
-fi
 
 fi
 

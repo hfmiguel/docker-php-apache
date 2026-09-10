@@ -10,24 +10,27 @@ ENV NODE_NO_WARNINGS=1
 ENV NODE_OPTIONS="--no-warnings"
 
 ### CONFIGURABLE ENV VARS ###
-OPENCODE_MAIN_MODEL=""
-OPENCODE_WEB_SERVER_HOST=""
-UNSLOTH_STUDIO_API_KEY=""
-GITHUB_ACCESS_TOKEN_MCP=""
-CONTEXT7_API_KEY=""
+ENV OPENCODE_MAIN_MODEL=""
+ENV OPENCODE_WEB_SERVER_HOST=""
+ENV UNSLOTH_STUDIO_API_KEY=""
+ENV GITHUB_ACCESS_TOKEN_MCP=""
+ENV CONTEXT7_API_KEY=""
 
 ## OPENWIKI ###
-OPENWIKI_PROVIDER="openai-compatible"
-OPENAI_COMPATIBLE_API_KEY=llama
-OPENAI_COMPATIBLE_BASE_URL=""
-OPENWIKI_MODEL_ID=""
-LANGSMITH_API_KEY=""
-OPENWIKI_TELEMETRY_DISABLED=1
-DO_NOT_TRACK=1
+ENV OPENWIKI_PROVIDER="openai-compatible"
+ENV OPENAI_COMPATIBLE_API_KEY=llama
+ENV OPENAI_COMPATIBLE_BASE_URL=""
+ENV OPENWIKI_MODEL_ID=""
+ENV LANGSMITH_API_KEY=""
+ENV OPENWIKI_TELEMETRY_DISABLED=1
+ENV DO_NOT_TRACK=1
 
 ## OPENCHAMBER
-OPENCHAMBER_UI_PASSWORD=1234
-OPENCHAMBER_PORT=3000
+ENV OPENCHAMBER_UI_PASSWORD=1234
+ENV OPENCHAMBER_PORT=3000
+
+ENV PHP_CONTAINER=""
+ENV OPENCODE_CONTAINER_NAME=""
 
 RUN export PATH=/home/www-data/.opencode/bin:$PATH
 
@@ -87,7 +90,7 @@ RUN curl --proto '=https' --tlsv1.2 -LsSf https://github.com/j178/prek/releases/
 
 RUN go install github.com/eljakani/ward@latest
 
-RUN mkdir -p /home/www-data /var/www/projects /ms-playwright ${GOPATH} && \
+RUN mkdir -p /home/www-data /var/www/project /ms-playwright ${GOPATH} && \
     groupmod -g 1000 www-data && \
     usermod -u 1000 -g www-data -d /home/www-data www-data
 
@@ -113,7 +116,8 @@ RUN curl -fsSL https://opencode.ai/install | bash
 
 RUN chown -R www-data:www-data /home/www-data/
 
-WORKDIR /var/www/projects
+## Map local files to this container folder.
+WORKDIR /var/www/project
 
 RUN chown -R www-data:www-data /usr/local/bin
 

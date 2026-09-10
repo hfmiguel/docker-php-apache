@@ -1,3 +1,5 @@
 *.md
 .git
 build.sh
+.opencode.env
+*.env
