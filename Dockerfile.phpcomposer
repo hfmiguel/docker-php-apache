@@ -1,9 +1,60 @@
-FROM php:8.4-cli
+FROM php:8.5-cli
 
-RUN apt-get update && apt-get install -y \
-    unzip \
-    libzip-dev \
-    && docker-php-ext-install zip
+RUN set -eux; \
+    apt-get update; \
+    apt-get upgrade -y; \
+    apt-get install -y nano; \
+    apt-get install -y --no-install-recommends \
+    curl \
+    supervisor \
+    libmemcached-dev \
+    libz-dev \
+    libpq-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libfreetype6-dev \
+    libssl-dev \
+    libwebp-dev \
+    libxpm-dev \
+    libmcrypt-dev \
+    libonig-dev; \
+    curl -sL https://deb.nodesource.com/setup_24.x | bash - ; \
+    apt install -y nodejs  ; \
+    rm -rf /var/lib/apt/lists/*; \
+    a2enmod rewrite negotiation
+
+RUN set -eux; \
+    # Install the PHP pdo_mysql extention
+    docker-php-ext-install pdo pdo_mysql \
+    docker-php-ext-configure gd \
+    --prefix=/usr \
+    --with-jpeg \
+    --with-webp \
+    --with-xpm \
+    --with-freetype; \
+    docker-php-ext-install gd; \
+    docker-php-ext-install exif; \
+    php -r 'var_dump(gd_info());'
+
+# always run apt update when start and after add new source list, then clean up at end.
+RUN set -xe; \
+    apt-get update -yqq && \
+    pecl channel-update pecl.php.net && \
+    apt-get install -yqq \
+    apt-utils \
+    gnupg2 \
+    git \
+    libzip-dev zip unzip && \
+    docker-php-ext-configure zip; \
+    docker-php-ext-install zip && \
+    php -m | grep -q 'zip'
+
+RUN docker-php-ext-configure intl \
+    && docker-php-ext-install intl \
+    && docker-php-ext-enable pdo_mysql redis
+
+RUN docker-php-ext-install bcmath
+RUN docker-php-ext-install pcntl
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

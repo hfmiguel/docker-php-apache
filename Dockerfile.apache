@@ -1,16 +1,16 @@
-FROM php:8.4.21-apache
+FROM php:8.5.6-apache
 
 LABEL maintainer="Henrique Felix <hfelixmiguell@gmail.com>"
 
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-ARG PHP_VERSION=8.4.21
+ARG PHP_VERSION=8.5.6
 
 # Set Environment Variables
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Changing DocumentRoot
-ENV APACHE_DOCUMENT_ROOT /var/www/public
+ENV APACHE_DOCUMENT_ROOT=/var/www/public
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
@@ -25,7 +25,7 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 RUN set -eux; \
     apt-get update; \
     apt-get upgrade -y; \
-    apt-get install nano; \
+    apt-get install -y nano; \
     apt-get install -y --no-install-recommends \
     curl \
     supervisor \
@@ -69,22 +69,13 @@ RUN set -xe; \
     apt-utils \
     gnupg2 \
     git \
-    #
-    #--------------------------------------------------------------------------
-    # Mandatory Software's Installation
-    #--------------------------------------------------------------------------
-    #
-    # Mandatory Software's such as ("mcrypt", "pdo_mysql", "libssl-dev", ....)
-    # are installed on the base image 'laradock/php-fpm' image. If you want
-    # to add more Software's or remove existing one, you need to edit the
-    # base image (https://github.com/Laradock/php-fpm).
-    #
-    # next lines are here becase there is no auto build on dockerhub see https://github.com/laradock/laradock/pull/1903#issuecomment-463142846
     libzip-dev zip unzip && \
     docker-php-ext-configure zip; \
-    # Install the zip extension
     docker-php-ext-install zip && \
     php -m | grep -q 'zip'
+
+RUN docker-php-ext-install bcmath
+RUN docker-php-ext-install pcntl
 
 #
 #--------------------------------------------------------------------------
@@ -115,60 +106,15 @@ RUN if [ ${INSTALL_PHPREDIS} = true ]; then \
     ;fi
 
 ###########################################################################
-# bcmath:
-###########################################################################
-
-ARG INSTALL_BCMATH=true
-
-RUN if [ ${INSTALL_BCMATH} = true ]; then \
-    # Install the bcmath extension
-    docker-php-ext-install bcmath \
-    ;fi
-
-###########################################################################
 # Opcache:
 ###########################################################################
-
-ARG INSTALL_OPCACHE=true
-
-RUN if [ ${INSTALL_OPCACHE} = true ]; then \
-    docker-php-ext-install opcache \
-    ;fi
 
 # Copy opcache configration
 COPY ./opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 
 ###########################################################################
-# Mysqli Modifications:
-###########################################################################
-
-ARG INSTALL_MYSQLI=true
-
-RUN if [ ${INSTALL_MYSQLI} = true ]; then \
-    docker-php-ext-install mysqli \
-    ;fi
-
-
-###########################################################################
 # Human Language and Character Encoding Support:
 ###########################################################################
-
-ARG INSTALL_INTL=true
-
-RUN if [ ${INSTALL_INTL} = true ]; then \
-    # Install intl and requirements
-    apt-get install -yqq zlib1g-dev libicu-dev g++ && \
-    docker-php-ext-configure intl && \
-    docker-php-ext-install intl \
-    ;fi
-
-
-
-###########################################################################
-# Image optimizers:
-###########################################################################
-
-USER root
 
 ARG INSTALL_IMAGE_OPTIMIZERS=true
 
@@ -180,11 +126,9 @@ RUN if [ ${INSTALL_IMAGE_OPTIMIZERS} = true ]; then \
 # ImageMagick:
 ###########################################################################
 
-USER root
-
 ARG INSTALL_IMAGEMAGICK=true
 ARG IMAGEMAGICK_VERSION=latest
-ENV IMAGEMAGICK_VERSION ${IMAGEMAGICK_VERSION}
+ENV IMAGEMAGICK_VERSION=${IMAGEMAGICK_VERSION}
 
 RUN if [ ${INSTALL_IMAGEMAGICK} = true ]; then \
     apt-get install -yqq libmagickwand-dev imagemagick && \
@@ -221,10 +165,8 @@ RUN set -xe; php -v | head -n 1 | grep -q "PHP ${PHP_VERSION}."
 #--------------------------------------------------------------------------
 #
 
-COPY ./laravel.ini /usr/local/etc/php/conf.d
+COPY ./php.ini /usr/local/etc/php/conf.d
 COPY ./pool.conf /usr/local/etc/php-fpm.d/
-
-USER root
 
 # Clean up
 RUN apt-get clean && \
@@ -244,10 +186,7 @@ RUN if [ ${INSTALL_FAKETIME} = true ]; then \
 
 # Configure locale.
 ARG LOCALE=POSIX
-ENV LC_ALL ${LOCALE}
-
-## Give full access to the /tmp directory for the www-data user, otherwise some packages will fail to install
-RUN chmod 1777 /tmp
+ENV LC_ALL=${LOCALE}
 
 
 WORKDIR /var/www

@@ -1,9 +1,7 @@
 #!/bin/bash
 
-cd /home/felix/Projetos/Pessoal/GithubPessoal/docker-php-apache
-
 # Define the image name
-IMAGE_NAME="devfelixh/php-8.4-apache:latest"
+IMAGE_NAME="devfelixh/php-8.5-apache:latest"
 
 # Build the Docker image
 docker build -t $IMAGE_NAME -f Dockerfile.apache .
@@ -15,7 +13,7 @@ docker push $IMAGE_NAME
 
 
 # Define the image name
-IMAGE_NAME="devfelixh/php-8.4-fpm:latest"
+IMAGE_NAME="devfelixh/php-8.5-fpm:latest"
 
 # Build the Docker image
 docker build -t $IMAGE_NAME -f Dockerfile.fpm .
