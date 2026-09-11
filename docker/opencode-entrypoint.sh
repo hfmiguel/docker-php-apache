@@ -94,8 +94,8 @@ chmod +x /usr/local/bin/run_phpcomposer_container
 
 fi
 
-if [ -n "$INSTALL_OPENWIKI" ]; then
-
+val="${INSTALL_OPENWIKI:-}"
+if [ -n "$val" ] && [ "$val" != "false" ] && [ "$val" != "FALSE" ] && [ "$val" != "0" ]; then
     # Check if OpenWiki is already installed
     if command -v openwiki >/dev/null 2>&1; then
         OPENWIKI_VERSION=$(openwiki --version 2>/dev/null || true)
@@ -117,12 +117,13 @@ if [ -n "$INSTALL_OPENWIKI" ]; then
             exit 1
         fi
     fi
-
+else
+  echo -e "\nSkipping OpenWiki installation."
 fi
 
 
-if [ -n "$INSTALL_OPENCHAMBER" ]; then
-
+val="${INSTALL_OPENCHAMBER:-}"
+if [ -n "$val" ] && [ "$val" != "false" ] && [ "$val" != "FALSE" ] && [ "$val" != "0" ]; then
     # Check if OpenChamber is already installed
     if command -v openchamber >/dev/null 2>&1; then
         OPENCHAMBER_VERSION=$(openchamber --version 2>/dev/null)
@@ -155,6 +156,8 @@ if [ -n "$INSTALL_OPENCHAMBER" ]; then
        echo -e "\nYou must define the `OPENCHAMBER_UI_PASSWORD` before starting OpenChamber."
     fi
 
+else
+  echo -e "\nSkipping OpenChamber installation."
 fi
 
 # keep container alive

@@ -88,7 +88,7 @@ RUN npm install -g mermaid jsdom
 RUN npm install -g @openchamber/web
 RUN curl -fsSL https://opencode.ai/install | bash
 
-RUN chown -R www-data:www-data /home/www-data /ms-playwright /tmp /usr/local/bin ${GOPATH} 
+RUN chown -R www-data:www-data /home/www-data /ms-playwright /tmp /usr/local/bin /usr/lib/node_modules ${GOPATH} 
 
 ## Map local files to this container folder.
 WORKDIR /var/www/project
