@@ -123,6 +123,6 @@ RUN chown -R www-data:www-data /usr/local/bin
 
 USER www-data
 
-ENTRYPOINT ["/etc/opencode-container-entrypoint.sh"]
+ENTRYPOINT ["/etc/opencode-entrypoint.sh"]
 
 CMD ["python3"]

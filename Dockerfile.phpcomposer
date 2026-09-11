@@ -6,7 +6,6 @@ RUN set -eux; \
     apt-get install -y nano; \
     apt-get install -y --no-install-recommends \
     curl \
-    supervisor \
     libmemcached-dev \
     libz-dev \
     libpq-dev \
@@ -19,9 +18,8 @@ RUN set -eux; \
     libmcrypt-dev \
     libonig-dev; \
     curl -sL https://deb.nodesource.com/setup_24.x | bash - ; \
-    apt install -y nodejs  ; \
-    rm -rf /var/lib/apt/lists/*; \
-    a2enmod rewrite negotiation
+    apt install -y nodejs && \
+    rm -rf /var/lib/apt/lists/* 
 
 RUN set -eux; \
     # Install the PHP pdo_mysql extention
