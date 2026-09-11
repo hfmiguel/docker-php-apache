@@ -32,40 +32,21 @@ ENV OPENCHAMBER_PORT=3000
 ENV PHP_CONTAINER=""
 ENV OPENCODE_CONTAINER_NAME=""
 
-RUN export PATH=/home/www-data/.opencode/bin:$PATH
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
     curl \
     git \
-    build-essential \
-    ca-certificates \
-    gnupg \
-    gosu \
     ripgrep \
-    tree \
     fd-find \
     jq \
     procps \
     lsof \
     wget \
     unzip \
-    libnss3 \
-    libnspr4 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libcups2 \
-    libdrm2 \
-    libdbus-1-3 \
-    libxkbcommon0 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxfixes3 \
-    libxrandr2 \
-    libgbm1 \
-    libasound2 \
-    xvfb \
+    tree \
+    gh \
     openssh-client \
-    && mkdir -p /etc/apt/keyrings \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -97,29 +78,20 @@ RUN mkdir -p /home/www-data /var/www/project /ms-playwright ${GOPATH} && \
 RUN ln -s /bin/true /usr/local/bin/xdg-open
 
 RUN npm install -g playwright@latest && \
-    playwright install chromium chrome --force
+    playwright install --with-deps chromium chrome --force
 
 RUN mkdir -p /home/www-data/.npm
 RUN mkdir -p /home/www-data/.cache/composer/
 RUN mkdir -p /home/www-data/.opencode/
 
-RUN curl -fsSL https://bun.sh/install | bash
-
-RUN npm install -g openwiki@latest
 RUN npm install -g mermaid jsdom
 RUN npm install -g @openchamber/web
-RUN apt install gh -y
-
-RUN chown -R www-data:www-data /home/www-data /ms-playwright /tmp ${GOPATH}
-
 RUN curl -fsSL https://opencode.ai/install | bash
 
-RUN chown -R www-data:www-data /home/www-data/
+RUN chown -R www-data:www-data /home/www-data /ms-playwright /tmp /usr/local/bin ${GOPATH} 
 
 ## Map local files to this container folder.
 WORKDIR /var/www/project
-
-RUN chown -R www-data:www-data /usr/local/bin
 
 USER www-data
 

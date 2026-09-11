@@ -94,8 +94,67 @@ chmod +x /usr/local/bin/run_phpcomposer_container
 
 fi
 
-if [ -n "$OPENCHAMBER_UI_PASSWORD" ]; then
-  openchamber --lan --port ${OPENCHAMBER_PORT} --ui-password ${OPENCHAMBER_UI_PASSWORD}
+if [ -n "$INSTALL_OPENWIKI" ]; then
+
+    # Check if OpenWiki is already installed
+    if command -v openwiki >/dev/null 2>&1; then
+        OPENWIKI_VERSION=$(openwiki --version 2>/dev/null || true)
+
+        echo -e "\nOpenWiki is already installed: ${OPENWIKI_VERSION}"
+    else
+        echo -e "\nInstalling OpenWiki..."
+
+        if npm install -g openwiki@latest; then
+            echo -e "\nOpenWiki installed successfully."
+
+            OPENWIKI_VERSION=$(openwiki --version 2>/dev/null || true)
+
+            if [ -n "$OPENWIKI_VERSION" ]; then
+                echo "Installed version: ${OPENWIKI_VERSION}"
+            fi
+        else
+            echo -e "\nFailed to install OpenWiki."
+            exit 1
+        fi
+    fi
+
+fi
+
+
+if [ -n "$INSTALL_OPENCHAMBER" ]; then
+
+    # Check if OpenChamber is already installed
+    if command -v openchamber >/dev/null 2>&1; then
+        OPENCHAMBER_VERSION=$(openchamber --version 2>/dev/null)
+
+        echo "OpenChamber is already installed: ${OPENCHAMBER_VERSION}"
+    else
+        echo "OpenChamber is not installed. Installing..."
+
+        if npm install -g @openchamber/web; then
+            echo "OpenChamber installed successfully."
+
+            OPENCHAMBER_VERSION=$(openchamber --version 2>/dev/null || true)
+
+            if [ -n "$OPENCHAMBER_VERSION" ]; then
+                echo "Installed version: ${OPENCHAMBER_VERSION}"
+            fi
+        else
+            echo "Failed to install OpenChamber."
+            exit 1
+        fi
+    fi
+
+    # Start OpenChamber
+    if [ -n "$OPENCHAMBER_UI_PASSWORD" ]; then
+        openchamber \
+            --lan \
+            --port "${OPENCHAMBER_PORT}" \
+            --ui-password "${OPENCHAMBER_UI_PASSWORD}"
+    else
+       echo -e "\nYou must define the `OPENCHAMBER_UI_PASSWORD` before starting OpenChamber."
+    fi
+
 fi
 
 # keep container alive

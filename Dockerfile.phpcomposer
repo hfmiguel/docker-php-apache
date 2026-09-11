@@ -31,8 +31,7 @@ RUN set -eux; \
     --with-xpm \
     --with-freetype; \
     docker-php-ext-install gd; \
-    docker-php-ext-install exif; \
-    php -r 'var_dump(gd_info());'
+    docker-php-ext-install exif; 
 
 # always run apt update when start and after add new source list, then clean up at end.
 RUN set -xe; \
