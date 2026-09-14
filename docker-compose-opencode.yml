@@ -10,7 +10,7 @@ services:
         group_add:
             - "${DOCKER_GID}" ## Add to your .profile: export DOCKER_GID=$(stat -c '%g' /var/run/docker.sock)
         env_file:
-            - .opencode.env
+            - ./docker/opencode/.opencode.env
         ports:
             - 3000:3000
         environment:

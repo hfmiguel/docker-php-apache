@@ -24,8 +24,15 @@ else
     echo "Warning: Openwiki provider not detected"
 fi
 
+val="${USE_BUILTIN_CONFIG:-}"
+
+if [ "$val" = "true" ] || [ "$val" = "TRUE" ] || [ "$val" = "1" ]; then
+    cp /etc/opencode-base.jsonc /home/www-data/.config/opencode/opencode.jsonc
+fi
 
 PHP_IMAGE=""
+PROJECT_NETWORK=""
+PROJECT_NETWORK_FULL_NAME=""
 
 if [ -n "$PHP_CONTAINER" ]; then
     PHP_IMAGE=$(docker ps -a --format '{{.Image}}' --filter "name=${PHP_CONTAINER}" | head -n 1)
@@ -34,6 +41,11 @@ if [ -n "$PHP_CONTAINER" ]; then
         PHP_IMAGE=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep "${PHP_CONTAINER}" | head -n 1)
     fi
 fi
+
+if [ -n "$PROJECT_NETWORK" ]; then
+    PROJECT_NETWORK_FULL_NAME=$(docker network ls --format '{{.Name}}' | grep ${PROJECT_NETWORK} )
+fi
+
 
 
 if [[ -n "$PHP_IMAGE" && -n "$OPENCODE_CONTAINER_NAME" && -n "$PROJECT_NETWORK_FULL_NAME" ]]; then

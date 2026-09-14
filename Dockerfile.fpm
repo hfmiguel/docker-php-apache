@@ -6,9 +6,6 @@ ARG PHP_VERSION=8.5.6
 # Set Environment Variables
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Changing DocumentRoot
-ENV APACHE_DOCUMENT_ROOT=/var/www/public
-
 # Configure locale.
 ARG LOCALE=POSIX
 ENV LC_ALL=${LOCALE}
@@ -24,9 +21,9 @@ RUN docker-php-ext-configure intl \
     && docker-php-ext-install intl pdo pdo_mysql \
     && docker-php-ext-enable pdo_mysql redis
 
-COPY ./php.ini /usr/local/etc/php/conf.d
-COPY ./pool.conf /usr/local/etc/php-fpm.d/
-COPY ./opcache.ini /usr/local/etc/php/conf.d/opcache.
+COPY ./docker/php/php.ini /usr/local/etc/php/conf.d
+COPY ./docker/php/pool.conf /usr/local/etc/php-fpm.d/
+COPY ./docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 
 
 
